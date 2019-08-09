@@ -13,14 +13,6 @@
     <version>2.2.5</version>
     <relativePath />
   </parent>
-  <mailingLists>
-    <mailingList>
-      <name>AssertJ Group</name>
-      <post>http://groups.google.com/group/assertj</post>
-      <subscribe>http://groups.google.com/group/assertj</subscribe>
-      <unsubscribe>http://groups.google.com/group/assertj</unsubscribe>
-    </mailingList>
-  </mailingLists>
   <scm>
     <developerConnection>scm:git:git@github.com:joel-costigliola/assertj-core.git</developerConnection>
     <connection>scm:git:git@github.com:joel-costigliola/assertj-core.git</connection>
