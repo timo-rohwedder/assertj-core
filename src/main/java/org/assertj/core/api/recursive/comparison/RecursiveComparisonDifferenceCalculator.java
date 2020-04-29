@@ -13,6 +13,7 @@
 package org.assertj.core.api.recursive.comparison;
 
 import static java.lang.String.format;
+import static java.util.Collections.newSetFromMap;
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toMap;
 import static org.assertj.core.api.recursive.comparison.ComparisonDifference.rootComparisonDifference;
@@ -32,6 +33,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
+import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -65,12 +67,15 @@ public class RecursiveComparisonDifferenceCalculator {
   private static final Map<Class<?>, Boolean> customHash = new ConcurrentHashMap<>();
 
   private static class ComparisonState {
+    DualValue root;
     Set<DualValue> visitedDualValues;
     List<ComparisonDifference> differences = new ArrayList<>();
     DualValueDeque dualValuesToCompare;
     RecursiveComparisonConfiguration recursiveComparisonConfiguration;
 
-    public ComparisonState(Set<DualValue> visited, RecursiveComparisonConfiguration recursiveComparisonConfiguration) {
+    public ComparisonState(DualValue root, Set<DualValue> visited,
+                           RecursiveComparisonConfiguration recursiveComparisonConfiguration) {
+      this.root = root;
       this.visitedDualValues = visited;
       this.dualValuesToCompare = new DualValueDeque(recursiveComparisonConfiguration);
       this.recursiveComparisonConfiguration = recursiveComparisonConfiguration;
@@ -101,7 +106,11 @@ public class RecursiveComparisonDifferenceCalculator {
     }
 
     private void registerForComparison(DualValue dualValue) {
-      if (!visitedDualValues.contains(dualValue)) dualValuesToCompare.addFirst(dualValue);
+      // only add value if not already visited or root
+      boolean nonAlreadyVisited = !root.hasSamePairOfValuesAs(dualValue) &&
+                                  visitedDualValues.stream().noneMatch(visited -> visited.hasSamePairOfValuesAs(dualValue));
+      if (nonAlreadyVisited) dualValuesToCompare.addFirst(dualValue);
+
     }
 
     private void initDualValuesToCompare(Object actual, Object expected, List<String> parentPath, boolean isRootObject) {
@@ -120,7 +129,7 @@ public class RecursiveComparisonDifferenceCalculator {
               DualValue fieldDualValue = new DualValue(parentPath, nonIgnoredActualFieldName,
                                                        COMPARISON.getSimpleValue(nonIgnoredActualFieldName, actual),
                                                        COMPARISON.getSimpleValue(nonIgnoredActualFieldName, expected));
-              dualValuesToCompare.addFirst(fieldDualValue);
+              registerForComparison(fieldDualValue);
             }
           } else {
             dualValuesToCompare.addFirst(dualValue);
@@ -134,7 +143,7 @@ public class RecursiveComparisonDifferenceCalculator {
       // need to remove already visited fields pair to avoid infinite recursion in case
       // parent -> set{child} with child having a reference back to parent
       // it occurs to unordered collection where we compare all possible combination of the collection elements recursively
-      dualValuesToCompare.removeAll(visitedDualValues);
+      dualValuesToCompare.removeAll(visitedDualValues); // TODO does that work with identity hash set?
     }
 
     private boolean mustCompareFieldsRecursively(boolean isRootObject, DualValue dualValue) {
@@ -172,7 +181,7 @@ public class RecursiveComparisonDifferenceCalculator {
       return list(expectedAndActualTypeDifference(actual, expected));
     }
     List<String> rootPath = list();
-    final Set<DualValue> visited = new HashSet<>();
+    final Set<DualValue> visited = newSetFromMap(new IdentityHashMap<>());
     return determineDifferences(actual, expected, rootPath, true, visited, recursiveComparisonConfiguration);
   }
 
@@ -181,7 +190,8 @@ public class RecursiveComparisonDifferenceCalculator {
   private static List<ComparisonDifference> determineDifferences(Object actual, Object expected, List<String> parentPath,
                                                                  boolean isRootObject, Set<DualValue> visited,
                                                                  RecursiveComparisonConfiguration recursiveComparisonConfiguration) {
-    ComparisonState comparisonState = new ComparisonState(visited, recursiveComparisonConfiguration);
+    ComparisonState comparisonState = new ComparisonState(new DualValue(parentPath, actual, expected), visited,
+                                                          recursiveComparisonConfiguration);
     comparisonState.initDualValuesToCompare(actual, expected, parentPath, isRootObject);
 
     while (comparisonState.hasDualValuesToCompare()) {

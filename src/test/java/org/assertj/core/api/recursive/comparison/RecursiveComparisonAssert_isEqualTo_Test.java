@@ -12,6 +12,7 @@
  */
 package org.assertj.core.api.recursive.comparison;
 
+import static java.lang.Integer.toHexString;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.entry;
 import static org.assertj.core.api.BDDAssertions.then;
@@ -166,10 +167,16 @@ public class RecursiveComparisonAssert_isEqualTo_Test extends RecursiveCompariso
     person4.name = "John";
     person4.home.address.number = 1;
 
+    Person self1 = new Person();
+    self1.neighbour = self1;
+    Person self2 = new Person();
+    self2.neighbour = self2;
+
     return Stream.of(arguments(person1, person2, "same data, same type"),
                      arguments(person2, person1, "same data, same type reversed"),
                      arguments(person3, person4, "same data, different type"),
-                     arguments(person4, person3, "same data, different type"));
+                     arguments(person4, person3, "same data, different type"),
+                     arguments(self1, self2, "objects self repeating"));
   }
 
   @Test

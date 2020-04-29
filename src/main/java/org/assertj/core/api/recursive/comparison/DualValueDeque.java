@@ -16,6 +16,7 @@ import static java.util.stream.Collectors.toList;
 
 import java.util.Collection;
 import java.util.LinkedList;
+import java.util.List;
 
 // special deque that can ignore DualKey according to RecursiveComparisonConfiguration.
 @SuppressWarnings("serial")
@@ -40,7 +41,10 @@ class DualValueDeque extends LinkedList<DualValue> {
 
   @Override
   public boolean addAll(int index, Collection<? extends DualValue> collection) {
-    return super.addAll(index, collection.stream().filter(this::shouldAddDualKey).collect(toList()));
+    List<DualValue> dualValuesToAdd = collection.stream()
+                                                .filter(this::shouldAddDualKey)
+                                                .collect(toList());
+    return super.addAll(index, dualValuesToAdd);
   }
 
   @Override
