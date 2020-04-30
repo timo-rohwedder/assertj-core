@@ -67,7 +67,6 @@ public class RecursiveComparisonDifferenceCalculator {
   private static final Map<Class<?>, Boolean> customHash = new ConcurrentHashMap<>();
 
   private static class ComparisonState {
-    DualValue root;
     Set<DualValue> visitedDualValues;
     List<ComparisonDifference> differences = new ArrayList<>();
     DualValueDeque dualValuesToCompare;
@@ -75,8 +74,9 @@ public class RecursiveComparisonDifferenceCalculator {
 
     public ComparisonState(DualValue root, Set<DualValue> visited,
                            RecursiveComparisonConfiguration recursiveComparisonConfiguration) {
-      this.root = root;
       this.visitedDualValues = visited;
+      // the root object is visited as it is the first pair we compare
+      this.visitedDualValues.add(root);
       this.dualValuesToCompare = new DualValueDeque(recursiveComparisonConfiguration);
       this.recursiveComparisonConfiguration = recursiveComparisonConfiguration;
     }
@@ -106,11 +106,11 @@ public class RecursiveComparisonDifferenceCalculator {
     }
 
     private void registerForComparison(DualValue dualValue) {
-      // only add value if not already visited or root
-      boolean nonAlreadyVisited = !root.hasSamePairOfValuesAs(dualValue) &&
-                                  visitedDualValues.stream().noneMatch(visited -> visited.hasSamePairOfValuesAs(dualValue));
-      if (nonAlreadyVisited) dualValuesToCompare.addFirst(dualValue);
+      if (!wasVisited(dualValue)) dualValuesToCompare.addFirst(dualValue);
+    }
 
+    private boolean wasVisited(DualValue dualValue) {
+      return visitedDualValues.stream().anyMatch(visitedDualValue -> visitedDualValue.hasSamePairOfValuesAs(dualValue));
     }
 
     private void initDualValuesToCompare(Object actual, Object expected, List<String> parentPath, boolean isRootObject) {
@@ -132,18 +132,21 @@ public class RecursiveComparisonDifferenceCalculator {
               registerForComparison(fieldDualValue);
             }
           } else {
+            // don't use registerForComparison as it would ignore root objects
             dualValuesToCompare.addFirst(dualValue);
           }
         } else {
+          // don't use registerForComparison as it would ignore root objects
           dualValuesToCompare.addFirst(dualValue);
         }
       } else {
+        // don't use registerForComparison as it would ignore root objects
         dualValuesToCompare.addFirst(dualValue);
       }
       // need to remove already visited fields pair to avoid infinite recursion in case
       // parent -> set{child} with child having a reference back to parent
       // it occurs to unordered collection where we compare all possible combination of the collection elements recursively
-      dualValuesToCompare.removeAll(visitedDualValues); // TODO does that work with identity hash set?
+      dualValuesToCompare.removeAll(visitedDualValues);
     }
 
     private boolean mustCompareFieldsRecursively(boolean isRootObject, DualValue dualValue) {
@@ -181,7 +184,8 @@ public class RecursiveComparisonDifferenceCalculator {
       return list(expectedAndActualTypeDifference(actual, expected));
     }
     List<String> rootPath = list();
-    final Set<DualValue> visited = newSetFromMap(new IdentityHashMap<>());
+    // we need to track visited values by identity to cater for duplicates
+    Set<DualValue> visited = newSetFromMap(new IdentityHashMap<>());
     return determineDifferences(actual, expected, rootPath, true, visited, recursiveComparisonConfiguration);
   }
 

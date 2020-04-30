@@ -12,7 +12,6 @@
  */
 package org.assertj.core.api.recursive.comparison;
 
-import static java.lang.Integer.toHexString;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.entry;
 import static org.assertj.core.api.BDDAssertions.then;

@@ -200,14 +200,13 @@ final class DualValue {
   }
 
   /**
-   * Returns true if the other DualValue values this one ignoring the order so (a, b) matches (b, a), false otherwise
+   * Returns true if the other DualValue values this one, false otherwise
    * @param other other DualValue
-   * @return true if the other DualValue values this one ignoring the order so (a, b) matches (b, a), false otherwise
+   * @return true if the other DualValue values this one, false otherwise
    */
   public boolean hasSamePairOfValuesAs(DualValue other) {
     if (other == null) return false; // as this instance can't be null!
-    return (actual == other.actual && expected == other.expected)
-           || (actual == other.expected && expected == other.actual);
+    return (actual == other.actual && expected == other.expected);
   }
 
   private static boolean isContainer(Object o) {

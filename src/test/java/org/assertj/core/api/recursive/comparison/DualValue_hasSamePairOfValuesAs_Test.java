@@ -33,10 +33,9 @@ public class DualValue_hasSamePairOfValuesAs_Test {
   void should_return_true_when_values_are_the_same(Object actual, Object expected) {
     // GIVEN
     DualValue dualValue1 = new DualValue(randomPath(), actual, expected);
-    DualValue dualValue2 = new DualValue(randomPath(), expected, actual);
-    DualValue dualValue3 = new DualValue(randomPath(), actual, expected);
+    DualValue dualValue2 = new DualValue(randomPath(), actual, expected);
     // WHEN
-    boolean samePairOfValues = dualValue1.hasSamePairOfValuesAs(dualValue2) && dualValue1.hasSamePairOfValuesAs(dualValue3);
+    boolean samePairOfValues = dualValue1.hasSamePairOfValuesAs(dualValue2);
     // THEN
     then(samePairOfValues).isTrue();
   }
