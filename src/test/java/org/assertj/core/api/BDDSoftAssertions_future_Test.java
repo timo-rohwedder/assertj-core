@@ -41,6 +41,7 @@ class BDDSoftAssertions_future_Test extends BaseAssertionsTest {
     softly = new BDDSoftAssertions();
   }
 
+  @SuppressWarnings("deprecation")
   @Test
   void should_work_with_CompletionStage() {
     // GIVEN
@@ -152,6 +153,50 @@ class BDDSoftAssertions_future_Test extends BaseAssertionsTest {
     // THEN
     then(softly.errorsCollected()).isEmpty();
     then(assertionError).hasMessageContaining("Cancelled");
+  }
+
+  @Test
+  void should_not_collect_AssertionError_from_Future_failsWithin() {
+    // GIVEN
+    Future<String> future = completedFuture("done");
+    // WHEN
+    AssertionError assertionError = expectAssertionError(() -> softly.then(future).failsWithin(10, MILLISECONDS));
+    // THEN
+    then(softly.errorsCollected()).isEmpty();
+    then(assertionError).hasMessageContaining("to have failed within 10L MILLISECONDS.");
+  }
+
+  @Test
+  void should_not_collect_AssertionError_from_Future_failsWithin_Duration() {
+    // GIVEN
+    Future<String> future = completedFuture("done");
+    // WHEN
+    AssertionError assertionError = expectAssertionError(() -> softly.then(future).failsWithin(TEN_MILLIS));
+    // THEN
+    then(softly.errorsCollected()).isEmpty();
+    then(assertionError).hasMessageContaining("to have failed within 0.01S.");
+  }
+
+  @Test
+  void should_not_collect_AssertionError_from_CompletableFuture_failsWithin() {
+    // GIVEN
+    CompletableFuture<String> future = completedFuture("done");
+    // WHEN
+    AssertionError assertionError = expectAssertionError(() -> softly.then(future).failsWithin(10, MILLISECONDS));
+    // THEN
+    then(softly.errorsCollected()).isEmpty();
+    then(assertionError).hasMessageContaining("to have failed within 10L MILLISECONDS.");
+  }
+
+  @Test
+  void should_not_collect_AssertionError_from_CompletableFuture_failsWithin_Duration() {
+    // GIVEN
+    CompletableFuture<String> future = completedFuture("done");
+    // WHEN
+    AssertionError assertionError = expectAssertionError(() -> softly.then(future).failsWithin(TEN_MILLIS));
+    // THEN
+    then(softly.errorsCollected()).isEmpty();
+    then(assertionError).hasMessageContaining("to have failed within 0.01S.");
   }
 
   @Test

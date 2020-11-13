@@ -12,26 +12,21 @@
  */
 package org.assertj.core.api;
 
-import static org.assertj.core.api.BDDAssertions.then;
-import static org.mockito.Mockito.mock;
+public class WithThrowable {
+  private final Throwable throwable;
 
-import org.junit.jupiter.api.Test;
+  WithThrowable(Throwable exception) {
+    this.throwable = exception;
+  }
 
-/**
- * Tests for <code>{@link Assertions#as(InstanceOfAssertFactory)}</code>.
- *
- * @author Stefano Cordio
- */
-class Assertions_as_with_InstanceOfAssertFactory_Test {
-
-  @Test
-  void should_return_the_given_assert_factory() {
-    // GIVEN
-    InstanceOfAssertFactory<?, AbstractAssert<?, ?>> assertFactory = mock(InstanceOfAssertFactory.class);
-    // WHEN
-    InstanceOfAssertFactory<?, AbstractAssert<?, ?>> result = Assertions.as(assertFactory);
-    // THEN
-    then(result).isSameAs(assertFactory);
+  /**
+   * Checks that the underlying throwable is of the given type and returns a {@link ThrowableAssertAlternative} to chain
+   * further assertions on the underlying throwable.
+   * @param type the expected {@link Throwable} type
+   * @return a {@link ThrowableAssertAlternative} built with underlying throwable.
+   */
+  public ThrowableAssertAlternative<?> withThrowableOfType(Class<? extends Throwable> type) {
+    return new ThrowableAssertAlternative<>(throwable).isInstanceOf(type);
   }
 
 }

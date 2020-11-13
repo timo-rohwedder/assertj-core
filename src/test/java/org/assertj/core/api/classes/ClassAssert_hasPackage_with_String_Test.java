@@ -10,28 +10,32 @@
  *
  * Copyright 2012-2020 the original author or authors.
  */
-package org.assertj.core.api.charsequence;
+package org.assertj.core.api.classes;
 
 import static org.mockito.Mockito.verify;
 
-import org.assertj.core.api.CharSequenceAssert;
-import org.assertj.core.api.CharSequenceAssertBaseTest;
+import org.assertj.core.api.ClassAssert;
+import org.assertj.core.api.ClassAssertBaseTest;
+import org.junit.jupiter.api.DisplayName;
 
 /**
- * Tests for <code>{@link org.assertj.core.api.CharSequenceAssert#isXmlEqualTo(CharSequence)}</code>.
+ * Tests for <code>{@link ClassAssert#hasPackage(String)}</code>.
  *
- * @author Joel Costigliola
+ * @author Matteo Mirk
  */
-class CharSequenceAssert_isXmlEqualTo_Test extends CharSequenceAssertBaseTest {
+@DisplayName("ClassAssert hasPackage(String)")
+class ClassAssert_hasPackage_with_String_Test extends ClassAssertBaseTest {
 
-  @SuppressWarnings("deprecation")
+  private static final String PACKAGE = "org.assertj.core.api";
+
   @Override
-  protected CharSequenceAssert invoke_api_method() {
-    return assertions.isXmlEqualTo("<jedi>yoda</jedi>");
+  protected ClassAssert invoke_api_method() {
+    return assertions.hasPackage(PACKAGE);
   }
 
   @Override
   protected void verify_internal_effects() {
-    verify(strings).assertXmlEqualsTo(getInfo(assertions), getActual(assertions), "<jedi>yoda</jedi>");
+    verify(classes).assertHasPackage(getInfo(assertions), getActual(assertions), PACKAGE);
   }
+
 }
